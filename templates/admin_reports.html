@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Жалобы пользователей — AI Admin</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .reports-header {
+            padding: 40px 0;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        .reports-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--danger);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            /* Резервный цвет */
+            text-shadow: 0 0 0 rgba(0,0,0,0); 
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-box {
+            background: var(--surface);
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            /* Анимация будет добавлена inline в HTML */
+        }
+        .stat-value { font-size: 2.5rem; font-weight: 800; color: var(--danger); }
+        .stat-label { color: var(--text-secondary); font-size: 0.95rem; margin-top: 5px; }
+
+        .suspicious-alert {
+            background: rgba(239, 68, 68, 0.05);
+            border: 2px solid var(--danger);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            margin-bottom: 40px;
+            animation: pulseBorder 2s infinite;
+        }
+        .suspicious-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .suspicious-card {
+            background: var(--surface-solid);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--danger);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            animation: slideUp 0.5s ease-out backwards;
+        }
+        .badge-count {
+            background: var(--danger);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .report-card {
+            background: var(--surface);
+            border-left: 5px solid var(--danger);
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideUp 0.5s ease-out backwards;
+        }
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .report-reason {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .report-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        .report-comment {
+            background: var(--background);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            font-style: italic;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseBorder { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        @media (max-width: 768px) {
+            .reports-title { font-size: 2rem; flex-direction: column; align-items: flex-start; }
+            .report-header { flex-direction: column; }
+            .report-actions { flex-direction: column; }
+            .report-actions .btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">👑 AI Admin</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/admin">⬅️ Назад в админку</a>
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 40px; padding-bottom: 60px;">
+        
+        <div class="reports-header">
+            <h1 class="reports-title">🚨 Жалобы пользователей</h1>
+            <p style="color: var(--text-secondary); max-width: 700px;">
+                Список всех обращений. Продавцы с {{ SUSPICIOUS_THRESHOLD }} и более жалобами автоматически помечаются как сомнительные.
+            </p>
+        </div>
+
+        <!-- Статистика С АНИМАЦИЕЙ -->
+        <div class="stats-row">
+            <!-- Ящик 1: Анимация с задержкой 0с -->
+            <div class="stat-box" style="animation: slideUp 0.6s ease-out backwards;">
+                <div class="stat-value">{{ reports|length }}</div>
+                <div class="stat-label">Всего жалоб</div>
+            </div>
+            <!-- Ящик 2: Анимация с задержкой 0.2с -->
+            <div class="stat-box" style="animation: slideUp 0.6s ease-out 0.2s backwards;">
+                <div class="stat-value">{{ suspicious_map|length }}</div>
+                <div class="stat-label">Проблемных продавцов</div>
+            </div>
+        </div>
+
+        <!-- Блок сомнительных продавцов -->
+        {% if suspicious_map %}
+        <div class="suspicious-alert">
+            <h2 style="margin-top: 0; color: var(--danger); display: flex; align-items: center; gap: 10px;">
+                ⚠️ Сомнительные продавцы (Требуют внимания)
+            </h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                На этих пользователей поступило много жалоб. Рекомендуется проверить их товары и активность.
+            </p>
+            <div class="suspicious-grid">
+                {% for seller_id, data in suspicious_map.items() %}
+                    {% if data.count >= SUSPICIOUS_THRESHOLD %}
+                    <div class="suspicious-card">
+                        <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                            <span class="badge-count">{{ data.count }} жалоб</span>
+                            <strong style="color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ data.seller.username }}</strong>
+                        </div>
+                        <form action="/admin/ban-user/{{ seller_id }}" method="post" onsubmit="return confirm('Заблокировать этого продавца и удалить все товары?');">
+                            <button type="submit" class="btn btn-danger btn-small">⛔ Бан</button>
+                        </form>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <h2 style="margin-bottom: 25px; font-size: 1.8rem; border-bottom: 2px solid var(--border); padding-bottom: 10px;">📋 Все обращения</h2>
+        
+        {% if not reports %}
+        <div style="text-align: center; padding: 60px; background: var(--surface); border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+            <span style="font-size: 4rem; display: block; margin-bottom: 15px;">🕊️</span>
+            <h3 style="margin-bottom: 10px; color: var(--text-primary);">Жалоб нет</h3>
+            <p style="color: var(--text-secondary);">Все чисто! Платформа работает безопасно.</p>
+        </div>
+        {% else %}
+            {% for report in reports %}
+            <div class="report-card" style="animation-delay: {{ loop.index * 0.05 }}s;">
+                <div class="report-header">
+                    <div>
+                        <span class="report-reason">
+                            {% if report.reason == 'scam' %}🤬 Мошенничество
+                            {% elif report.reason == 'virus' %}🦠 Вирус / Вредоносное ПО
+                            {% elif report.reason == 'fake' %}❌ Несоответствие описанию
+                            {% elif report.reason == 'rude' %}😡 Хамство
+                            {% else %}⚠️ Другое{% endif %}
+                        </span>
+                        <span style="margin-left: 15px; font-size: 0.9rem; color: var(--text-secondary);">
+                            📅 {{ report.created_at.strftime('%d.%m.%Y %H:%M') }}
+                        </span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">Жалоба от:</div>
+                        <strong style="color: var(--primary);">{{ report.reporter.username }}</strong>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 5px;">На продавца:</div>
+                        <strong style="color: var(--danger);">{{ report.target_seller.username }}</strong>
+                        {% if suspicious_map.get(report.target_seller.id, {}).count >= SUSPICIOUS_THRESHOLD %}
+                        <br><span class="badge-count" style="font-size: 0.7rem; margin-top: 5px; display: inline-block;">СОМНИТЕЛЬНЫЙ</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if report.product %}
+                <div class="report-meta">
+                    📦 Товар: <a href="/product/{{ report.product.id }}" style="color: var(--primary); text-decoration: underline;">{{ report.product.title }}</a>
+                </div>
+                {% endif %}
+
+                {% if report.comment %}
+                <div class="report-comment">
+                    "{{ report.comment }}"
+                </div>
+                {% endif %}
+
+                <div class="report-actions">
+                    <a href="/seller/{{ report.target_seller.username }}" class="btn btn-outline btn-small">👁️ Профиль продавца</a>
+                    <form action="/admin/ban-user/{{ report.target_seller.id }}" method="post" onsubmit="return confirm('Заблокировать этого продавца и удалить все его товары?');">
+                        <button type="submit" class="btn btn-danger btn-small">⛔ ЗАБАНИТЬ И УДАЛИТЬ ВСЁ</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+    </main>
+
+    <footer class="footer">
+        <p>© 2025 AI Validated Platform</p>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Правовая информация — AI Validated</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .legal-wrapper {
+            padding: 60px 0;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .legal-content {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            line-height: 1.8;
+            color: var(--text-primary);
+            animation: slideUp 0.6s ease-out backwards;
+        }
+        .legal-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--primary); /* Резервный цвет */
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .legal-section {
+            margin-bottom: 40px;
+        }
+        .legal-section h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .legal-section p, .legal-section ul {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        .legal-section ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+        .legal-section li {
+            margin-bottom: 12px;
+            position: relative;
+            padding-left: 5px;
+        }
+        .highlight {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .emoji-bullet {
+            margin-right: 8px;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .legal-title { font-size: 2rem; }
+            .legal-content { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                {% if current_user %}
+                <a href="/dashboard">Кабинет</a>
+                
+                <!-- КНОПКА АДМИНКИ -->
+                {% if current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                {% else %}
+                <a href="/login">Вход</a>
+                {% endif %}
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container legal-wrapper">
+        <div class="legal-content">
+            <h1 class="legal-title">Правовая информация</h1>
+            
+            <div class="legal-section">
+                <h2>1. Общие положения</h2>
+                <p>
+                    Добро пожаловать на <span class="highlight">AI Validated</span>. Используя нашу платформу, вы автоматически соглашаетесь с этими правилами. Мы стараемся говорить просто, но суть от этого не меняется: это договор между нами и вами.
+                </p>
+                <p>
+                    Платформа — это технологический посредник. Мы даем инструменты для размещения товаров, безопасных сделок и авто-доставки, но не являемся продавцом или покупателем.
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>2. Цифровые товары и авторское право</h2>
+                <ul>
+                    <li><span class="emoji-bullet">🧠</span><strong>Авторство:</strong> Все права на товары принадлежат их создателям. Загружая файл, вы гарантируете, что он ваш или у вас есть права на его продажу.</li>
+                    <li><span class="emoji-bullet">🚫</span><strong>Запреты:</strong> Строго запрещена продажа вирусов, стилеров, краденых курсов и любого незаконного контента. Нарушители банятся навсегда без права восстановления.</li>
+                    <li><span class="emoji-bullet">🤖</span><strong>Роль ИИ:</strong> Наша нейросеть помогает проверять товары, но финальное решение и ответственность лежат на пользователе.</li>
+                    <li><span class="emoji-bullet">📜</span><strong>Лицензия:</strong> Покупая товар, вы получаете лицензию только для личного использования. Перепродажа и слив в паблик запрещены.</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>3. Защита от пиратства</h2>
+                <p>
+                    Мы защищаем авторов всеми доступными методами:
+                </p>
+                <ul>
+                    <li><span class="emoji-bullet">💧</span><strong>Водяные знаки:</strong> В файлы автоматически вшиваются данные покупателя (ник, ID). Если файл утечет в сеть — мы узнаем, кто слил.</li>
+                    <li><span class="emoji-bullet">🔒</span><strong>Лимиты:</strong> Количество скачиваний ограничено, чтобы затруднить массовую кражу.</li>
+                    <li><span class="emoji-bullet">⚖️</span><strong>EULA:</strong> Перед скачиванием пользователь подтверждает согласие не распространять файл.</li>
+                </ul>
+            </div>
+
+            <div class="legal-section">
+                <h2>4. Финансовые условия</h2>
+                <p>
+                    <strong>AI Validated — это бесплатный проект с открытым исходным кодом.</strong>
+                </p>
+                <ul>
+                    <li><span class="emoji-bullet">🚫</span><strong>0% Комиссии:</strong> Платформа не удерживает никаких процентов. Все деньги переходят продавцу напрямую (P2P).</li>
+                    <li><span class="emoji-bullet">💸</span><strong>Прямые выплаты:</strong> Расчеты происходят между пользователями. Мы не храним ваши деньги и не выступаем банком.</li>
+                    <li><span class="emoji-bullet">🤝</span><strong>Споры:</strong> Возврат средств — по договоренности сторон. Администрация не является финансовым гарантом, но предоставляет логи переписки и сделок для разбора полетов.</li>
+                </ul>
+                <p style="margin-top: 15px; font-style: italic; color: var(--text-secondary);">
+                    Мы создали этот проект, чтобы комьюнити могло обмениваться цифровыми продуктами безопасно и бесплатно.
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2>5. Ответственность сторон</h2>
+                <p>
+                    Давай будем честны: мы предоставляем инструменты, но не можем контролировать каждый байт в интернете.
+                </p>
+                <ul>
+                    <li><span class="emoji-bullet">🛡️</span><strong>Мы не всесильны:</strong> Администрация не несет ответственности за косвенные убытки, упущенную выгоду или форс-мажоры. Мы делаем всё возможное для безопасности, но 100% гарантий не существует.</li>
+                    <li><span class="emoji-bullet">👤</span><strong>Вы — взрослые люди:</strong> Пользователи несут полную ответственность за то, что они загружают и покупают. Соблюдайте законы своей страны.</li>
+                    <li><span class="emoji-bullet">🧠</span><strong>Здравый смысл:</strong> Если предложение выглядит слишком хорошо, чтобы быть правдой — скорее всего, так оно и есть. Проверяйте продавцов, читайте отзывы и используйте голову.</li>
+                </ul>
+            </div>
+
+            <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                Последнее обновление: 23.03.2026<br>
+                По вопросам обращайтесь: support@ai-validated.com
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform</p>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему — AI Validated</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .auth-wrapper {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%);
+            animation: fadeIn 0.8s ease-out;
+        }
+        .auth-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 450px;
+            animation: slideUp 0.6s ease-out;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--primary); /* Резервный цвет */
+            margin-bottom: 10px;
+        }
+        .auth-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .form-footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .form-footer a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .auth-card { padding: 30px 20px; }
+            .auth-title { font-size: 1.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                <a href="/login" class="active">Вход</a>
+                
+                <!-- КНОПКА АДМИНКИ (если вдруг залогинен основатель) -->
+                {% if current_user and current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">С возвращением! 👋</h1>
+                <p class="auth-subtitle">Войдите в свой аккаунт для продолжения</p>
+            </div>
+
+            {% if request.query_params.get("error") %}
+            <div class="alert alert-error">❌ Неверный логин или пароль</div>
+            {% endif %}
+            {% if request.query_params.get("msg") == "registered" %}
+            <div class="alert alert-success">✅ Аккаунт создан! Войдите.</div>
+            {% endif %}
+
+            <form method="post" action="/login">
+                <div class="form-group">
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" name="username" required placeholder="Введите ваш никнейм" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large btn-full" style="margin-top: 10px;">
+                    Войти в систему 🔓
+                </button>
+            </form>
+
+            <div class="form-footer">
+                Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform</p>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

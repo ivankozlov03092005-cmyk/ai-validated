@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 🔥 ГЛАВНЫЙ ЗАГОЛОВОК ДЛЯ ПОИСКА (до 60 символов) -->
+    <title>AI Validated — Безопасная продажа цифровых товаров без комиссии</title>
+    
+    <!-- 🔥 ОПИСАНИЕ ДЛЯ ПОИСКА (то, что будет под ссылкой в Яндексе/Google) -->
+    <meta name="description" content="Платформа AI Validated: покупка и продажа скриптов, модов и файлов без комиссий. Защита от пиратства, ИИ-проверка чеков, мгновенная доставка. Бесплатный хостинг для авторов.">
+    
+    <!-- 🔥 КЛЮЧЕВЫЕ СЛОВА (через запятую) -->
+    <meta name="keywords" content="купить скрипт, скачать мод, цифровые товары, продажа файлов, маркетплейс, без комиссии, P2P, защита от пиратства, AI Validated, безопасная сделка, магазин цифровых товаров">
+    
+    <!-- 🔥 ДЛЯ КРАСИВОЙ ССЫЛКИ В TELEGRAM, VK, DISCORD -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AI Validated — Магазин цифровых товаров">
+    <meta property="og:description" content="0% комиссии. ИИ-защита. Мгновенная доставка. Заходи и продавай безопасно!">
+    <meta property="og:image" content="https://huggingface.co/datasets/huggingface/badges/resolve/main/badge.svg"> <!-- Сюда потом вставишь ссылку на свою картинку -->
+    
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+
+        /* Специфичные стили для главной страницы */
+        .hero-section {
+            text-align: center;
+            padding: 80px 20px;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.1), transparent 40%);
+            animation: fadeInDown 1s ease-out;
+        }
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            /* РЕЗЕРВНЫЙ ЦВЕТ (чтобы не было белых квадратов) */
+            color: var(--primary); 
+            line-height: 1.2;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        .feature-card {
+            background: var(--surface);
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .hero-subtitle { font-size: 1.1rem; }
+            .hero-section { padding: 40px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                
+                {% if current_user %}
+                <a href="/dashboard">Кабинет</a>
+                
+                <!-- КНОПКА АДМИНКИ (Только для основателя) -->
+                {% if current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                {% else %}
+                <a href="/login">Вход</a>
+                {% endif %}
+                
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <div class="container">
+                <h1 class="hero-title">Безопасная продажа<br>цифровых товаров</h1>
+                <p class="hero-subtitle">
+                    Платформа с ИИ-проверкой чеков, защитой от пиратства и автоматической доставкой. 
+                    Продавайте скрипты, курсы и файлы без риска.
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <a href="/catalog" class="btn btn-primary btn-large">🚀 Перейти в каталог</a>
+                    {% if not current_user %}
+                    <a href="/register" class="btn btn-outline btn-large">📝 Регистрация</a>
+                    {% endif %}
+                </div>
+
+                <!-- FEATURES -->
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🛡️</span>
+                        <h3>Защита от пиратства</h3>
+                        <p style="color: var(--text-secondary); margin-top: 10px;">
+                            Водяные знаки, лимиты скачиваний и персональные лицензии для каждого покупателя.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🤖</span>
+                        <h3>ИИ-Модерация</h3>
+                        <p style="color: var(--text-secondary); margin-top: 10px;">
+                            Автоматическая проверка чеков и контента нейросетями перед публикацией.
+                        </p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <h3>Мгновенная доставка</h3>
+                        <p style="color: var(--text-secondary); margin-top: 10px;">
+                            Покупатель получает файл сразу после подтверждения оплаты продавцом.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ПОСЛЕДНИЕ ТОВАРЫ -->
+        <section class="container" style="padding: 40px 24px 80px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-size: 2rem; font-weight: 800;">🔥 Свежие поступления</h2>
+                <a href="/catalog" style="color: var(--primary); font-weight: 600;">Все товары →</a>
+            </div>
+
+            {% if products %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 10px;">
+                        <h3 class="card-title">{{ product.title }}</h3>
+                        {% if product.is_recommended %}<span style="color: orange; font-size: 1.2rem;">🔥</span>{% endif %}
+                    </div>
+                    
+                    <p class="card-desc">{{ product.description }}</p>
+                    
+                    <div style="margin-top: auto; padding-top: 15px; border-top: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-size: 0.9rem; color: var(--text-secondary);">📂 {{ product.sub_category }}</span>
+                            <span style="font-weight: bold; color: var(--primary); font-size: 1.2rem;">
+                                {% if product.price == 0 %}Free{% else %}{{ product.price }} {{ current_user.get_currency_symbol() if current_user else '₽' }}{% endif %}
+                            </span>
+                        </div>
+                        <a href="/product/{{ product.id }}" class="btn btn-primary btn-full">Подробнее</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 60px; background: var(--surface); border-radius: var(--radius-lg); border: 1px dashed var(--border);">
+                <p style="color: var(--text-secondary); font-size: 1.1rem;">Пока нет товаров. Будьте первыми!</p>
+                <a href="/upload" class="btn btn-primary" style="margin-top: 20px;">Загрузить товар</a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform. Все права защищены.</p>
+            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="/legal" style="color: var(--text-secondary); font-size: 0.9rem;">Правовая информация</a>
+                <a href="/rules" style="color: var(--text-secondary); font-size: 0.9rem;">Правила</a>
+                <a href="/about" style="color: var(--text-secondary); font-size: 0.9rem;">О проекте</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if mode == 'sales' %}Мои продажи{% else %}Мои покупки{% endif %} — AI Validated</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .dashboard-header {
+            padding: 40px 0;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--primary); /* Резервный цвет */
+            margin-bottom: 10px;
+        }
+        
+        .transactions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .transaction-card {
+            background: var(--surface);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 20px;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideUp 0.5s ease-out backwards;
+        }
+        .transaction-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .t-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+        .t-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .t-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-align: right;
+            min-width: 120px;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+        .status-completed { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .status-verification { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid var(--warning); }
+        .status-rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        
+        .t-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+            min-width: 150px;
+        }
+        
+        .check-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .check-preview:hover { transform: scale(1.1); border-color: var(--primary); }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            border: 1px dashed var(--border);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        .empty-icon { font-size: 4rem; margin-bottom: 20px; display: block; opacity: 0.5; }
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .transaction-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 15px;
+            }
+            .t-meta { justify-content: center; }
+            .t-price { text-align: center; }
+            .t-actions { align-items: center; width: 100%; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                {% if current_user %}
+                <a href="/dashboard" class="active">Кабинет</a>
+                
+                <!-- КНОПКА АДМИНКИ -->
+                {% if current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                {% else %}
+                <a href="/login">Вход</a>
+                {% endif %}
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 40px; padding-bottom: 60px;">
+        
+        <div class="dashboard-header">
+            <h1 class="page-title">
+                {% if mode == 'sales' %}💰 Мои продажи{% else %}🛒 Мои покупки{% endif %}
+            </h1>
+            <p style="color: var(--text-secondary);">
+                {% if mode == 'sales' %}Управляйте заказами и подтверждайте оплаты.{% else %}История ваших приобретений и скачиваний.{% endif %}
+            </p>
+        </div>
+
+        {% if request.query_params.get("msg") == "check_sent" %}
+        <div class="alert alert-success">✅ Чек отправлен! Продавец проверит его в ближайшее время.</div>
+        {% endif %}
+
+        {% if items %}
+        <div class="transactions-list">
+            {% for t in items %}
+            <div class="transaction-card" style="animation-delay: {{ loop.index * 0.05 }}s;">
+                
+                <!-- Информация о товаре/покупке -->
+                <div class="t-info">
+                    <h3>{{ t.product.title }}</h3>
+                    <div class="t-meta">
+                        <span>📅 {{ t.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                        {% if mode == 'sales' %}
+                            <span>👤 Покупатель: {{ t.buyer.username }}</span>
+                        {% else %}
+                            <span>🏪 Продавец: {{ t.seller.username }}</span>
+                        {% endif %}
+                        <span class="status-badge status-{{ t.status }}">
+                            {% if t.status == 'completed' %}✅ Выполнено
+                            {% elif t.status == 'verification' %}⏳ Проверка
+                            {% else %}❌ Отклонено{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Цена -->
+                <div class="t-price">
+                    {{ t.amount }} {{ current_user.get_currency_symbol() }}
+                </div>
+
+                <!-- Действия и Чек -->
+                <div class="t-actions">
+                    {% if t.screenshot_path %}
+                    <img src="/{{ t.screenshot_path }}" alt="Чек" class="check-preview" onclick="window.open('/{{ t.screenshot_path }}', '_blank')" title="Посмотреть чек">
+                    {% endif %}
+                    
+                    {% if mode == 'sales' and t.status == 'verification' %}
+                        <form action="/sales/confirm/{{ t.id }}" method="post">
+                            <button type="submit" class="btn btn-success btn-small">✅ Подтвердить оплату</button>
+                        </form>
+                    {% elif mode == 'purchases' and t.status == 'completed' %}
+                        <a href="/secure-download/{{ t.product.id }}" class="btn btn-primary btn-small">⬇️ Скачать</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">
+                {% if mode == 'sales' %}📦{% else %}🛍️{% endif %}
+            </span>
+            <h3 style="margin-bottom: 10px; color: var(--text-primary);">
+                {% if mode == 'sales' %}Пока нет продаж{% else %}Пока нет покупок{% endif %}
+            </h3>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                {% if mode == 'sales' %}Как только кто-то купит ваш товар, он появится здесь.{% else %}Совершенные покупки отобразятся в этом списке.{% endif %}
+            </p>
+            <a href="{% if mode == 'sales' %}/upload{% else %}/catalog{% endif %}" class="btn btn-primary">
+                {% if mode == 'sales' %}Загрузить товар{% else %}Перейти в каталог{% endif %}
+            </a>
+        </div>
+        {% endif %}
+
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform</p>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

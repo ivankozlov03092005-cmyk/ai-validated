@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О проекте — AI Validated</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .about-wrapper {
+            padding: 60px 0;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .hero-section {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 20px;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.1), transparent 40%);
+            border-radius: var(--radius-xl);
+            animation: slideUp 0.6s ease-out backwards;
+        }
+        .about-title {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--primary); /* Резервный цвет */
+            margin-bottom: 20px;
+        }
+        .about-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .feature-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            padding: 35px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        .feature-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        }
+        .feature-desc {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 60px;
+            background: var(--surface);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out 0.5s backwards;
+        }
+        .stat-item h3 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .stat-item p {
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05));
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out 0.6s backwards;
+        }
+        .contact-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+        .contact-email {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: var(--background);
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+        }
+        .contact-email:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .about-title { font-size: 2.2rem; }
+            .stats-section { grid-template-columns: 1fr 1fr; gap: 30px; padding: 20px; }
+            .stat-item h3 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                {% if current_user %}
+                <a href="/dashboard">Кабинет</a>
+                
+                <!-- КНОПКА АДМИНКИ -->
+                {% if current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                {% else %}
+                <a href="/login">Вход</a>
+                {% endif %}
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container about-wrapper">
+        
+        <div class="hero-section">
+            <h1 class="about-title">Будущее цифровой торговли</h1>
+            <p class="about-subtitle">
+                AI Validated — это первая платформа, где искусственный интеллект гарантирует безопасность каждой сделки. 
+                Мы объединили передовые технологии защиты от пиратства с удобным интерфейсом для создателей и покупателей.
+            </p>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-section">
+            <div class="stat-item">
+                <h3>5+</h3>
+                <p>Уровней защиты</p>
+            </div>
+            <div class="stat-item">
+                <h3>AI</h3>
+                <p>Проверка чеков</p>
+            </div>
+            <div class="stat-item">
+                <h3>0%</h3>
+                <p>Скрытых комиссий</p>
+            </div>
+            <div class="stat-item">
+                <h3>24/7</h3>
+                <p>Авто-доставка</p>
+            </div>
+        </div>
+
+        <!-- Преимущества -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🛡️</span>
+                <h3 class="feature-title">Максимальная защита</h3>
+                <p class="feature-desc">
+                    Персональные водяные знаки, лимиты скачиваний и юридическое соглашение (EULA) делают кражу вашего контента невыгодной и опасной для пирата.
+                </p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🤖</span>
+                <h3 class="feature-title">ИИ-Модерация</h3>
+                <p class="feature-desc">
+                    Наша нейросеть автоматически проверяет чеки об оплате на подлинность, сверяет суммы и коды, исключая человеческий фактор и ошибки.
+                </p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3 class="feature-title">Мгновенный старт</h3>
+                <p class="feature-desc">
+                    Загрузите товар, настройте цену и начните продавать за 5 минут. Никаких сложных верификаций документов для старта.
+                </p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🌍</span>
+                <h3 class="feature-title">Глобальный охват</h3>
+                <p class="feature-desc">
+                    Принимайте оплату со всего мира. Поддержка множества валют и криптоплатежей делает ваши товары доступными для всех.
+                </p>
+            </div>
+        </div>
+
+        <!-- Контакты -->
+        <div class="contact-box">
+            <h2 class="contact-title">Есть вопросы или предложения?</h2>
+            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                Мы всегда открыты для диалога. Если вы нашли баг, хотите предложить новую функцию или нуждаетесь в помощи — напишите нам.
+            </p>
+            <a href="mailto:support@ai-validated.com" class="contact-email">support@ai-validated.com</a>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform. Все права защищены.</p>
+            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="/legal" style="color: var(--text-secondary); font-size: 0.9rem;">Правовая информация</a>
+                <a href="/rules" style="color: var(--text-secondary); font-size: 0.9rem;">Правила</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

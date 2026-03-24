@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.title }} — AI Validated</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .product-hero {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        .product-info { flex: 2; min-width: 300px; }
+        .product-sidebar { 
+            flex: 1; 
+            min-width: 280px; 
+            background: var(--surface);
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .product-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            line-height: 1.2;
+            color: var(--text-primary);
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--primary); /* Резерв */
+        }
+        .product-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .badge-pill {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .price-tag {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .media-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .media-item {
+            aspect-ratio: 16/9;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: transform 0.3s;
+        }
+        .media-item:hover { transform: scale(1.03); }
+        .media-item img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .review-card, .report-form-box {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+        .review-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+        
+        .star-rating { display: flex; gap: 5px; color: gold; font-size: 1.2rem; }
+        
+        @media (max-width: 768px) {
+            .product-hero { flex-direction: column; }
+            .product-sidebar { position: static; width: 100%; }
+            .product-title { font-size: 2rem; }
+            .price-tag { font-size: 2rem; }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                {% if current_user %}
+                <a href="/dashboard">Кабинет</a>
+                
+                <!-- КНОПКА АДМИНКИ -->
+                {% if current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                {% else %}
+                <a href="/login">Вход</a>
+                {% endif %}
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 40px; padding-bottom: 60px;">
+        <div style="margin-bottom: 20px;">
+            <a href="/catalog" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">← Назад в каталог</a>
+        </div>
+
+        <div class="product-hero">
+            <!-- Левая колонка: Инфо и Медиа -->
+            <div class="product-info">
+                <span class="badge-pill">{{ product.main_category }} / {{ product.sub_category }}</span>
+                <h1 class="product-title">{{ product.title }}</h1>
+                
+                <div class="product-meta">
+                    <span>👁️ {{ product.view_count }} просмотров</span>
+                    <span>⬇️ {{ product.download_count }} скачиваний</span>
+                    <span>⭐ {{ product.product_rating }}/5 ({{ product.review_count }})</span>
+                </div>
+
+                {% if product.demo_video_path %}
+                <div style="width: 100%; border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 30px; border: 1px solid var(--border); background: #000;">
+                    <video controls style="width: 100%; max-height: 500px;">
+                        <source src="/{{ product.demo_video_path }}" type="video/mp4">
+                    </video>
+                </div>
+                {% endif %}
+
+                <div class="section-title">📝 Описание</div>
+                <div style="background: var(--surface); padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border); line-height: 1.8; color: var(--text-primary); white-space: pre-wrap;">
+                    {{ product.description }}
+                </div>
+
+                {% if product.screenshots %}
+                <div class="section-title">🖼️ Скриншоты</div>
+                <div class="media-gallery">
+                    {% for img_path in product.screenshots %}
+                    <div class="media-item" onclick="window.open('/{{ img_path }}', '_blank')">
+                        <img src="/{{ img_path }}" alt="Screenshot" loading="lazy">
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Отзывы и Жалобы -->
+                <div id="reviews" class="section-title">💬 Отзывы</div>
+                
+                {% if request.query_params.get("msg") == "report_sent" %}
+                <div class="alert alert-success">✅ Жалоба отправлена!</div>
+                {% endif %}
+
+                {% if current_user and can_review %}
+                <div class="review-card" style="border-left: 4px solid var(--success);">
+                    <h3 style="margin-top:0;">Оставить отзыв</h3>
+                    <form action="/product/{{ product.id }}/review" method="post">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display:block; margin-bottom:5px; font-weight:600;">Оценка:</label>
+                            <div style="display:flex; flex-direction:row-reverse; justify-content:flex-end; gap:5px; font-size:2rem;">
+                                <input type="radio" name="rating" value="5" id="star5" required><label for="star5" style="cursor:pointer; color:#ccc;">★</label>
+                                <input type="radio" name="rating" value="4" id="star4"><label for="star4" style="cursor:pointer; color:#ccc;">★</label>
+                                <input type="radio" name="rating" value="3" id="star3"><label for="star3" style="cursor:pointer; color:#ccc;">★</label>
+                                <input type="radio" name="rating" value="2" id="star2"><label for="star2" style="cursor:pointer; color:#ccc;">★</label>
+                                <input type="radio" name="rating" value="1" id="star1"><label for="star1" style="cursor:pointer; color:#ccc;">★</label>
+                            </div>
+                            <style>input:checked~label, input:checked~label~label{color:gold;} label:hover, label:hover~label{color:gold;}</style>
+                        </div>
+                        <textarea name="comment" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--background); color:var(--text-primary);" placeholder="Комментарий..."></textarea>
+                        <button type="submit" class="btn btn-primary" style="margin-top:10px;">Отправить</button>
+                    </form>
+                </div>
+                {% elif current_user and not can_review and current_user.id != product.seller_id %}
+                <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: var(--warning);">
+                    ℹ️ Только покупатели могут оставлять отзывы.
+                </div>
+                {% endif %}
+
+                {% if current_user and can_report %}
+                <details class="report-form-box">
+                    <summary style="cursor: pointer; color: var(--danger); font-weight: bold; list-style: none;">🚨 Пожаловаться на продавца</summary>
+                    <form action="/report/seller/{{ product.seller.id }}" method="post" style="margin-top: 15px;">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <select name="reason" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border); background:var(--background); color:var(--text-primary);">
+                            <option value="scam">Мошенничество</option>
+                            <option value="virus">Вирус</option>
+                            <option value="fake">Обман</option>
+                            <option value="rude">Хамство</option>
+                        </select>
+                        <textarea name="comment" rows="2" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid var(--border); background:var(--background); color:var(--text-primary);" placeholder="Подробности..."></textarea>
+                        <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Отправить жалобу?');">Отправить жалобу</button>
+                    </form>
+                </details>
+                {% endif %}
+
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                        <div class="review-card">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <strong style="color:var(--primary);">{{ review.buyer.username }}</strong>
+                                <div class="star-rating">{{ "★" * review.rating }}{{ "☆" * (5 - review.rating) }}</div>
+                            </div>
+                            {% if review.comment %}<p style="color:var(--text-primary); margin:0;">{{ review.comment }}</p>{% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color:var(--text-secondary); text-align:center; padding:20px;">Пока нет отзывов.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Правая колонка: Покупка и Продавец -->
+            <aside class="product-sidebar">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <span class="price-tag">
+                        {% if product.price == 0 %}Бесплатно{% else %}{{ product.price }} {{ current_user.get_currency_symbol() if current_user else '₽' }}{% endif %}
+                    </span>
+                    
+                    {% if product.price == 0 %}
+                    <a href="/download/{{ product.id }}" class="btn btn-success btn-large btn-full">⬇️ Скачать бесплатно</a>
+                    {% elif current_user %}
+                    <a href="/buy/{{ product.id }}" class="btn btn-primary btn-large btn-full">💳 Купить сейчас</a>
+                    {% else %}
+                    <a href="/login" class="btn btn-primary btn-large btn-full">Войти для покупки</a>
+                    {% endif %}
+                    
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 15px;">
+                        🔒 Безопасная сделка через гаранта
+                    </p>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 30px 0;">
+
+                <h3 style="margin-bottom: 20px; font-size: 1.2rem;">👤 Продавец</h3>
+                <a href="/seller/{{ product.seller.username }}" style="text-decoration: none; color: inherit;">
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--background); border-radius: var(--radius-md); transition: background 0.2s;">
+                        <div style="width: 50px; height: 50px; background: var(--gradient-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem;">
+                            {{ product.seller.username[0].upper() }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-primary);">{{ product.seller.username }}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">⭐ {{ "%.1f"|format(product.seller.seller_rating) }}/10</div>
+                        </div>
+                        <div style="margin-left: auto; color: var(--text-secondary);">➡️</div>
+                    </div>
+                </a>
+                
+                {% if product.seller.is_brand %}
+                <div style="margin-top: 15px; padding: 10px; background: rgba(255, 215, 0, 0.1); border: 1px solid gold; border-radius: 8px; text-align: center; color: #d4af37; font-weight: 600; font-size: 0.9rem;">
+                    ✅ Официальный бренд
+                </div>
+                {% endif %}
+            </aside>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform. Все права защищены.</p>
+            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="/legal" style="color: var(--text-secondary); font-size: 0.9rem;">Правовая информация</a>
+                <a href="/rules" style="color: var(--text-secondary); font-size: 0.9rem;">Правила</a>
+                <a href="/about" style="color: var(--text-secondary); font-size: 0.9rem;">О проекте</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

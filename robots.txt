@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /_protected_uploads/
+
+Sitemap: https://твой-сайт.com/sitemap.xml

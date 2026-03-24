@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Правила сообщества — AI Validated</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .rules-wrapper {
+            padding: 60px 0;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .rules-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .rules-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .rules-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--primary); /* Резервный цвет */
+            margin-bottom: 15px;
+        }
+        
+        .rule-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: slideUp 0.5s ease-out backwards;
+        }
+        .rule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        .rule-icon {
+            font-size: 3rem;
+            flex-shrink: 0;
+            width: 80px;
+            text-align: center;
+        }
+        .rule-body h3 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        .rule-body p, .rule-body ul {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+        .rule-body ul {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        .rule-body li {
+            margin-bottom: 5px;
+        }
+        
+        .warning-box {
+            background: rgba(239, 68, 68, 0.05);
+            border: 2px solid var(--danger);
+            padding: 25px;
+            border-radius: var(--radius-lg);
+            margin-top: 40px;
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out 0.6s backwards;
+        }
+        .warning-title {
+            color: var(--danger);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .rules-title { font-size: 2rem; }
+            .rule-card { flex-direction: column; align-items: center; text-align: center; padding: 20px; }
+            .rule-icon { font-size: 2.5rem; width: auto; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                {% if current_user %}
+                <a href="/dashboard">Кабинет</a>
+                
+                <!-- КНОПКА АДМИНКИ -->
+                {% if current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                {% else %}
+                <a href="/login">Вход</a>
+                {% endif %}
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container rules-wrapper">
+        <div class="rules-content">
+            <div class="rules-header">
+                <h1 class="rules-title">Правила сообщества</h1>
+                <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+                    Чтобы наша платформа оставалась безопасной и удобной для всех, пожалуйста, соблюдайте эти простые правила.
+                </p>
+            </div>
+
+            <!-- Правило 1 -->
+            <div class="rule-card" style="animation-delay: 0.1s;">
+                <div class="rule-icon">🛡️</div>
+                <div class="rule-body">
+                    <h3>Безопасность и честность</h3>
+                    <p>Запрещена продажа вредоносного ПО, вирусов, стилеров и любого контента, наносящего вред пользователям. Запрещен обман в описании товаров. Файл должен строго соответствовать заявленному функционалу.</p>
+                </div>
+            </div>
+
+            <!-- Правило 2 -->
+            <div class="rule-card" style="animation-delay: 0.2s;">
+                <div class="rule-icon">🧠</div>
+                <div class="rule-body">
+                    <h3>Уважение к интеллектуальной собственности</h3>
+                    <p>Разрешена продажа только авторского контента или товаров, на которые у вас есть права распространения. Плагиат, кража чужих курсов, скриптов или дизайнов строго запрещены и ведут к вечному бану.</p>
+                </div>
+            </div>
+
+            <!-- Правило 3 -->
+            <div class="rule-card" style="animation-delay: 0.3s;">
+                <div class="rule-icon">🤝</div>
+                <div class="rule-body">
+                    <h3>Культура общения</h3>
+                    <p>Оскорбления, угрозы, спам и токсичное поведение в отзывах, личных сообщениях или комментариях недопустимы. Мы ценим конструктивный диалог между продавцами и покупателями.</p>
+                </div>
+            </div>
+
+            <!-- Правило 4 -->
+            <div class="rule-card" style="animation-delay: 0.4s;">
+                <div class="rule-icon">💸</div>
+                <div class="rule-body">
+                    <h3>Финансовая дисциплина</h3>
+                    <p>Продавцы обязаны подтверждать получение оплаты в течение разумного срока. Попытки увести сделку мимо платформы (обход комиссии) через личные сообщения влекут блокировку аккаунта без права восстановления.</p>
+                </div>
+            </div>
+
+            <!-- Правило 5 -->
+            <div class="rule-card" style="animation-delay: 0.5s;">
+                <div class="rule-icon">🔒</div>
+                <div class="rule-body">
+                    <h3>Защита от пиратства</h3>
+                    <p>Покупателям запрещено распространять купленные файлы в открытом доступе, торрентах или на других площадках. В файлы встраиваются персональные водяные знаки. При обнаружении утечки аккаунт покупателя будет заблокирован, а данные переданы автору для юридической защиты.</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <div class="warning-title">⚖️ Нарушение правил</div>
+                <p style="color: var(--text-secondary);">
+                    Администрация оставляет за собой право блокировать пользователей, нарушающих данные правила, без предварительного предупреждения. В спорных ситуациях решение принимается на основе логов переписки и данных системы.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform</p>
+            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <a href="/legal" style="color: var(--text-secondary); font-size: 0.9rem;">Правовая информация</a>
+                <a href="/about" style="color: var(--text-secondary); font-size: 0.9rem;">О проекте</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

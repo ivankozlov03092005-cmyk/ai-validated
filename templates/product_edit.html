@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать: {{ product.title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .edit-container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+        .form-group input, 
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            box-sizing: border-box; /* Важно для отступов */
+        }
+        .form-group input:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .btn-group .btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            <div class="nav-links">
+                <a href="/">Главная</a>
+                <a href="/dashboard">Кабинет</a>
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-bottom: 60px;">
+        
+        <div class="edit-container">
+            <h1 style="margin-bottom: 10px; text-align: center;">✏️ Редактирование товара</h1>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
+                Товар: <strong>{{ product.title }}</strong>
+            </p>
+
+            {% if request.query_params.get("msg") == "updated" %}
+            <div class="alert alert-success" style="margin-bottom: 20px; text-align: center;">
+                ✅ Товар успешно обновлен!
+            </div>
+            {% endif %}
+
+            <form method="post">
+                <div class="form-group">
+                    <label for="title">Название товара</label>
+                    <input type="text" id="title" name="title" value="{{ product.title }}" required placeholder="Введите название...">
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Цена ({{ current_user.get_currency_symbol() }})</label>
+                    <input type="number" id="price" name="price" step="0.01" min="0" value="{{ product.price }}" required placeholder="0.00">
+                    <small style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-top: 5px;">
+                        Укажите 0, если товар бесплатный.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Описание</label>
+                    <textarea id="description" name="description" required placeholder="Подробное описание вашего товара...">{{ product.description }}</textarea>
+                </div>
+
+                <div class="btn-group">
+                    <a href="/dashboard" class="btn btn-outline">Отмена</a>
+                    <button type="submit" class="btn btn-primary">💾 Сохранить изменения</button>
+                </div>
+            </form>
+
+            <div class="warning-box">
+                ⚠️ <strong>Внимание:</strong> Через эту форму можно изменить только текст и цену. 
+                Чтобы заменить сам файл, скриншоты или видео, вам нужно удалить этот товар и загрузить новый.
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <p>© 2025 AI Validated Platform</p>
+        <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary); display: flex; justify-content: center; gap: 15px;">
+            <a href="/legal" style="color: inherit; text-decoration: none;">Правовая информация</a>
+            <span>|</span>
+            <a href="/rules" style="color: inherit; text-decoration: none;">Правила</a>
+            <span>|</span>
+            <a href="/about" style="color: inherit; text-decoration: none;">О проекте</a>
+        </div>
+    </footer>
+
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+    </script>
+</body>
+</html>

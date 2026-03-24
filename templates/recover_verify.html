@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"><title>Код подтверждения</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<div class="container" style="max-width:500px; margin-top:50px;">
+    <div class="auth-form-container">
+        <h2>📝 Введите код</h2>
+        <p>Код отправлен на <strong>{{ email }}</strong> (смотрите консоль сервера!)</p>
+        {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+        
+        <form method="post" action="/recover/verify">
+            <input type="hidden" name="email" value="{{ email }}">
+            <div class="form-group">
+                <label>Код из 6 цифр:</label>
+                <input type="text" name="code" maxlength="6" required pattern="\d*">
+            </div>
+            <div class="form-group">
+                <label>Новый пароль:</label>
+                <input type="password" name="new_password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Сменить пароль</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

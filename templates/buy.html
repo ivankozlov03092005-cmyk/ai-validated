@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Покупка: {{ product.title }} — AI Validated</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .buy-wrapper {
+            padding: 40px 0;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .buy-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .info-card, .payment-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            height: fit-content;
+            animation: slideUp 0.6s ease-out backwards;
+        }
+        .info-card { animation-delay: 0.1s; }
+        .payment-card { animation-delay: 0.2s; }
+        
+        .product-mini {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .product-thumb {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-main);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .product-mini-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+        .product-mini-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .code-display {
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .code-display::before {
+            content: 'КОД ОПЛАТЫ';
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 0.7rem;
+            color: var(--primary);
+            font-weight: 700;
+            opacity: 0.7;
+        }
+        .code-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+            display: block;
+        }
+        .timer-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .requisites-box {
+            background: var(--background);
+            padding: 15px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .requisites-box:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .requisites-box:active {
+            transform: scale(0.98);
+        }
+        .copy-hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            text-align: center;
+            display: block;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 30px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            background: rgba(99, 102, 241, 0.02);
+            cursor: pointer;
+            position: relative;
+        }
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .upload-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; color: var(--primary); }
+        .file-input-hidden {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .buy-container { grid-template-columns: 1fr; }
+            .code-value { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">🤖 AI Validated</a>
+            
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/">Главная</a>
+                <a href="/catalog">Каталог</a>
+                {% if current_user %}
+                <a href="/dashboard">Кабинет</a>
+                
+                <!-- КНОПКА АДМИНКИ -->
+                {% if current_user.username == 'Development_and_founder' %}
+                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
+                {% endif %}
+                
+                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
+                {% else %}
+                <a href="/login">Вход</a>
+                {% endif %}
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container buy-wrapper">
+        <div style="margin-bottom: 30px;">
+            <a href="/product/{{ product.id }}" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;">← Отмена покупки</a>
+        </div>
+
+        {% if request.query_params.get("error") %}
+        <div class="alert alert-error" style="max-width: 900px; margin: 0 auto 30px;">
+            ❌ {{ request.query_params.get("error") }}
+        </div>
+        {% endif %}
+
+        <div class="buy-container">
+            <!-- Левая колонка: Инфо о товаре -->
+            <div class="info-card">
+                <h2 style="margin-top: 0; font-size: 1.8rem; margin-bottom: 20px;">Оформление заказа</h2>
+                
+                <div class="product-mini">
+                    <div class="product-thumb">{{ product.title[0].upper() }}</div>
+                    <div class="product-mini-info">
+                        <h3>{{ product.title }}</h3>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px;">Продавец: {{ seller_name }}</div>
+                        <div class="product-mini-price">{{ product.price }} {{ current_user.get_currency_symbol() }}</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); padding: 15px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 5px 0; color: var(--warning); font-size: 1rem;">⚠️ Важно!</h4>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+                        1. Переведите точную сумму на реквизиты.<br>
+                        2. В комментарии к платежу обязательно укажите <strong>код оплаты</strong>.<br>
+                        3. Загрузите скриншот чека ниже.
+                    </p>
+                </div>
+
+                <div class="code-display">
+                    <span class="code-value">{{ payment_code }}</span>
+                    <div class="timer-hint">Этот код действителен 10 минут</div>
+                </div>
+            </div>
+
+            <!-- Правая колонка: Оплата -->
+            <div class="payment-card">
+                <h3 style="margin-top: 0; margin-bottom: 15px;">Шаг 1: Перевод средств</h3>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px;">Реквизиты продавца:</p>
+                
+                <div class="requisites-box" onclick="navigator.clipboard.writeText('{{ seller_requisites }}'); alert('Реквизиты скопированы!');" title="Нажмите, чтобы скопировать">
+                    {{ seller_requisites }}
+                </div>
+                <span class="copy-hint">📋 Нажмите на поле, чтобы скопировать</span>
+
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 25px 0;">
+
+                <h3 style="margin-bottom: 15px;">Шаг 2: Подтверждение</h3>
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="payment_code_user" value="{{ payment_code }}">
+                    
+                    <div class="form-group">
+                        <label style="font-weight: 600; margin-bottom: 10px; display: block;">Загрузите скриншот чека</label>
+                        <div class="upload-area" id="checkDrop">
+                            <span class="upload-icon">📸</span>
+                            <div style="font-weight: 600; color: var(--text-primary);">Нажмите или перетащите фото</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);" id="checkFileName">JPG, PNG</div>
+                            <input type="file" name="file" class="file-input-hidden" accept="image/*" required onchange="updateFileName(this, 'checkFileName')">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-large btn-full" style="margin-top: 20px;">
+                        ✅ Отправить чек на проверку
+                    </button>
+                    
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; margin-top: 15px;">
+                        Чек будет проверен ИИ и продавцом. После подтверждения товар появится в вашем кабинете.
+                    </p>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 AI Validated Platform</p>
+        </div>
+    </footer>
+
+    <!-- СКРИПТЫ -->
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.querySelector('.mobile-menu-btn');
+            navLinks.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+                document.querySelector('.mobile-menu-btn').classList.remove('active');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+
+        function updateFileName(input, displayId) {
+            const display = document.getElementById(displayId);
+            if (input.files && input.files[0]) {
+                display.textContent = "✅ " + input.files[0].name;
+                display.style.color = "var(--success)";
+                display.style.fontWeight = "bold";
+            }
+        }
+    </script>
+</body>
+</html>
