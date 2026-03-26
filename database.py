@@ -5,15 +5,18 @@ from sqlalchemy.orm import sessionmaker
 # === НАСТРОЙКА ПОДКЛЮЧЕНИЯ К SUPABASE ===
 DATABASE_URL = "postgresql://postgres.qsehuwqsawmnfdsajkxv:uctF5JHMiseuQrU;@aws-1-eu-west-1.pooler.supabase.com:6543/postgres"
 
-# Создаем движок с настройками для стабильной работы через пулер
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,      # Автоматически проверяет соединение перед запросом
-    pool_size=5,             # Размер пула соединений
-    max_overflow=10,         # Максимум дополнительных соединений
-    connect_args={"connect_timeout": 5}, # Таймаут подключения (5 секунд)
-    echo=False               # Поставь True, если хочешь видеть SQL-запросы в логах для отладки
+    pool_pre_ping=True,      # Пингует базу перед каждым запросом. Если связь потеряна - пересоздает.
+    pool_size=2,             # Уменьшил пул для экономии памяти на бесплатном тарифе
+    max_overflow=5,
+    connect_args={
+        "connect_timeout": 30,  # Ждем подключения до 30 секунд (критично для waking up!)
+        "sslmode": "require"
+    },
+    echo=False
 )
+
 
 # Фабрика сессий
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
