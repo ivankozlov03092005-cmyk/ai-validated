@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime, timezone
 
-# Константы
+# === КОНСТАНТЫ ===
 CURRENCIES = {
     "RUB": {"name": "Российский рубль", "symbol": "₽"},
     "USD": {"name": "Доллар США", "symbol": "$"},
@@ -26,6 +26,8 @@ MAIN_CATEGORIES = [
     "Programming", "Science", "Education", "Games", "Design", 
     "Music", "Video", "Business", "Other"
 ]
+
+# === МОДЕЛИ ===
 
 class Seller(Base):
     __tablename__ = "sellers"
@@ -140,7 +142,6 @@ class Review(Base):
     product = relationship("Product", back_populates="reviews")
     buyer = relationship("Seller", foreign_keys=[buyer_id], back_populates="reviews_given")
 
-# === НОВЫЙ КЛАСС ДЛЯ ЖАЛОБ ===
 class Report(Base):
     __tablename__ = "reports"
 
@@ -164,3 +165,18 @@ class ViewHistory(Base):
     user_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     viewed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+# === НОВАЯ МОДЕЛЬ ДЛЯ БЕЗОПАСНЫХ СЕССИЙ (ОБЯЗАТЕЛЬНО!) ===
+from datetime import datetime
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    session_token = Column(String, unique=True, index=True, nullable=False)
+    username = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=False)
+    ip_address = Column(String, nullable=True)
+    user_agent = Column(String, nullable=True)
+    is_valid = Column(Boolean, default=True)
