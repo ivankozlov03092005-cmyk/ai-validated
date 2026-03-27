@@ -3,309 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузка товара — AI Validated</title>
+    <title>Загрузка товара | AI Validated</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        .upload-wrapper {
-            padding: 40px 0;
-            animation: fadeInUp 0.8s ease-out;
-        }
-        .upload-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .upload-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--gradient-main);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: var(--primary); /* Резервный цвет */
-            margin-bottom: 10px;
-        }
-        
-        .upload-form {
-            background: var(--surface);
-            backdrop-filter: blur(20px);
-            padding: 40px;
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-lg);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .file-drop-area {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius-lg);
-            padding: 40px 20px;
-            text-align: center;
-            transition: all 0.3s;
-            background: rgba(99, 102, 241, 0.02);
-            cursor: pointer;
-            position: relative;
-        }
-        .file-drop-area:hover, .file-drop-area.dragover {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.05);
-            transform: translateY(-2px);
-        }
-        .file-drop-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: block;
-            color: var(--primary);
-        }
-        .file-drop-text {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 5px;
-        }
-        .file-drop-subtext {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        .file-input-hidden {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .preview-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .preview-item {
-            aspect-ratio: 1;
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            border: 1px solid var(--border);
-            background: var(--background);
-        }
-        .preview-item img {
-            width: 100%; height: 100%; object-fit: cover;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 768px) {
-            .upload-title { font-size: 2rem; }
-            .upload-form { padding: 25px 20px; }
-            .file-drop-area { padding: 30px 15px; }
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 600; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; font-family: inherit; }
+        .form-group textarea { height: 120px; resize: vertical; }
+        .form-group input[type="file"] { display: block; width: 100%; padding: 10px; background: #f8f9fa; border: 1px dashed #ccc; border-radius: 6px; }
+        .btn { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        .btn:hover { background: #0056b3; }
+        .error-box { background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center; font-weight: bold; }
+        .success-box { background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #a5d6a7; text-align: center; font-weight: bold; }
+        .nav-link { display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
-    <!-- НАВИГАЦИЯ С БУРГЕРОМ И АДМИНКОЙ -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="logo">🤖 AI Validated</a>
-            
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+    <div class="container">
+        <a href="/dashboard" class="nav-link">← Вернуться в кабинет</a>
+        <h1>📦 Загрузка нового товара</h1>
 
-            <div class="nav-links" id="navLinks">
-                <a href="/">Главная</a>
-                <a href="/catalog">Каталог</a>
-                {% if current_user %}
-                <a href="/dashboard" class="active">Кабинет</a>
-                
-                <!-- КНОПКА АДМИНКИ -->
-                {% if current_user.username == 'Development_and_founder' %}
-                <a href="/admin" style="color: var(--danger); font-weight: bold;">👑 Админка</a>
-                {% endif %}
-                
-                <a href="/logout" class="btn btn-small btn-outline">Выход</a>
-                {% else %}
-                <a href="/login">Вход</a>
-                {% endif %}
-                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="container upload-wrapper">
-        <div class="upload-header">
-            <h1 class="upload-title">Загрузить товар 📦</h1>
-            <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
-                Заполните информацию о товаре и загрузите файлы. ИИ автоматически проверит описание перед публикацией.
-            </p>
-        </div>
-
-        {% if request.query_params.get("error") %}
-        <div class="alert alert-error" style="max-width: 800px; margin: 0 auto 30px;">
-            ❌ {{ request.query_params.get("error") }}
+        <!-- БЛОК ВЫВОДА ОШИБОК -->
+        {% if error %}
+        <div class="error-box">
+            ❌ Ошибка: {{ error }}
         </div>
         {% endif %}
-<!-- БЛОК ВЫВОДА ОШИБОК ПРИ ЗАГРУЗКЕ -->
-{% if error %}
-<div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-    ❌ Ошибка загрузки: {{ error }}
-</div>
-{% endif %}
 
-<!-- Если есть сообщение об успехе (из URL) -->
-{% if request.query_params.get("success") %}
-<div style="background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #a5d6a7; text-align: center; font-weight: bold;">
-    ✅ Товар успешно загружен!
-</div>
-{% endif %}
-
-        <form method="post" enctype="multipart/form-data" class="upload-form" id="uploadForm">
-            
-            <!-- Основной файл -->
-            <div class="form-group">
-                <label>Файл товара (.zip, .py, .exe, .pdf и др.)</label>
-                <div class="file-drop-area" id="mainFileDrop">
-                    <span class="file-drop-icon">📁</span>
-                    <div class="file-drop-text">Нажмите или перетащите файл сюда</div>
-                    <div class="file-drop-subtext" id="mainFileName">Макс. размер не ограничен</div>
-                    <input type="file" name="file" class="file-input-hidden" required onchange="updateFileName(this, 'mainFileName')">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="form-group">
-                    <label for="title">Название товара</label>
-                    <input type="text" id="title" name="title" required placeholder="Например: Python Bot v2.0">
-                </div>
-                <div class="form-group">
-                    <label for="price">Цена ({{ current_user.get_currency_symbol() }})</label>
-                    <input type="number" step="0.01" min="0" id="price" name="price" required placeholder="0.00">
-                    <small style="color: var(--text-secondary); font-size: 0.8rem;">0 для бесплатного товара</small>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="description">Подробное описание</label>
-                <textarea id="description" name="description" rows="6" required placeholder="Опишите функционал, преимущества и инструкцию по установке..."></textarea>
-            </div>
-
-            <!-- Скриншоты -->
-            <div class="form-group">
-                <label>Скриншоты (до 5 шт.)</label>
-                <div class="file-drop-area" style="padding: 20px;" id="screenshotsDrop">
-                    <span class="file-drop-icon" style="font-size: 2rem;">🖼️</span>
-                    <div class="file-drop-text">Выберите изображения</div>
-                    <div class="file-drop-subtext" id="screenshotsCount">Файлы не выбраны</div>
-                    <input type="file" name="screenshots" class="file-input-hidden" multiple accept="image/*" onchange="updateFileCount(this, 'screenshotsCount', 'previewGrid')">
-                </div>
-                <div class="preview-grid" id="previewGrid"></div>
-            </div>
-
-            <!-- Видео (опционально) -->
-            <div class="form-group">
-                <label>Демо-видео (опционально)</label>
-                <div class="file-drop-area" style="padding: 20px;" id="videoDrop">
-                    <span class="file-drop-icon" style="font-size: 2rem;">🎬</span>
-                    <div class="file-drop-text">Загрузить видео обзор</div>
-                    <div class="file-drop-subtext" id="videoName">MP4, MOV, AVI</div>
-                    <input type="file" name="video" class="file-input-hidden" accept="video/*" onchange="updateFileName(this, 'videoName')">
-                </div>
-            </div>
-
-            <div style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
-                <button type="submit" class="btn btn-primary btn-large" style="flex: 2;">
-                    🚀 Загрузить на проверку
-                </button>
-                <a href="/dashboard" class="btn btn-outline btn-large" style="flex: 1; text-align: center;">
-                    Отмена
-                </a>
-            </div>
-        </form>
-    </main>
-
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 AI Validated Platform</p>
+        <!-- БЛОК УСПЕХА (если вернулись с ?success=1) -->
+        {% if request.query_params.get("success") %}
+        <div class="success-box">
+            ✅ Товар успешно загружен!
         </div>
-    </footer>
+        {% endif %}
 
-    <!-- СКРИПТЫ -->
-    <script>
-        function toggleMobileMenu() {
-            const navLinks = document.getElementById('navLinks');
-            const btn = document.querySelector('.mobile-menu-btn');
-            navLinks.classList.toggle('active');
-            btn.classList.toggle('active');
-        }
+        <form method="post" action="/upload" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">Название товара</label>
+                <input type="text" id="title" name="title" required placeholder="Например: Python Bot for Telegram">
+            </div>
 
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                document.getElementById('navLinks').classList.remove('active');
-                document.querySelector('.mobile-menu-btn').classList.remove('active');
-            });
-        });
+            <div class="form-group">
+                <label for="description">Описание</label>
+                <textarea id="description" name="description" required placeholder="Подробно опишите функционал..."></textarea>
+            </div>
 
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('theme', next);
-        }
+            <div class="form-group">
+                <label for="price">Цена ($)</label>
+                <input type="number" id="price" name="price" step="0.01" min="0" required placeholder="0.00">
+            </div>
 
-        function updateFileName(input, displayId) {
-            const display = document.getElementById(displayId);
-            if (input.files && input.files[0]) {
-                display.textContent = "✅ " + input.files[0].name;
-                display.style.color = "var(--success)";
-                display.style.fontWeight = "bold";
-            }
-        }
+            <div class="form-group">
+                <label for="file">Файл товара (.py, .exe, .zip, .pdf)</label>
+                <input type="file" id="file" name="file" required>
+            </div>
 
-        function updateFileCount(input, displayId, gridId) {
-            const display = document.getElementById(displayId);
-            const grid = document.getElementById(gridId);
-            grid.innerHTML = ''; 
-            
-            if (input.files && input.files.length > 0) {
-                display.textContent = `Выбрано файлов: ${input.files.length}`;
-                display.style.color = "var(--success)";
-                
-                Array.from(input.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const div = document.createElement('div');
-                        div.className = 'preview-item';
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        div.appendChild(img);
-                        grid.appendChild(div);
-                    }
-                    reader.readAsDataURL(file);
-                });
-            } else {
-                display.textContent = "Файлы не выбраны";
-                display.style.color = "var(--text-secondary)";
-            }
-        }
+            <div class="form-group">
+                <label for="screenshots">Скриншоты (можно выбрать несколько)</label>
+                <input type="file" id="screenshots" name="screenshots" multiple accept="image/*">
+            </div>
 
-        document.querySelectorAll('.file-drop-area').forEach(area => {
-            area.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                area.classList.add('dragover');
-            });
-            area.addEventListener('dragleave', () => {
-                area.classList.remove('dragover');
-            });
-            area.addEventListener('drop', (e) => {
-                e.preventDefault();
-                area.classList.remove('dragover');
-            });
-        });
-    </script>
+            <div class="form-group">
+                <label for="video">Демо-видео (необязательно)</label>
+                <input type="file" id="video" name="video" accept="video/*">
+            </div>
+
+            <button type="submit" class="btn">Опубликовать товар</button>
+        </form>
+    </div>
 </body>
 </html>
