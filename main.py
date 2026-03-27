@@ -44,8 +44,8 @@ OCR_AVAILABLE = False
 print("⚠️ [SYSTEM] OCR MODULE DISABLED FOR STABILITY & MEMORY SAVINGS")
 
 # === НАСТРОЙКИ БЕЗОПАСНОСТИ ===
-FOUNDER_USERNAME = "Development_and_founder"
-ALLOWED_ADMINS = ["Development_and_founder"]
+FOUNDER_USERNAME = "Shadow1"
+ALLOWED_ADMINS = ["Shadow1"]
 SUSPICIOUS_THRESHOLD = 3
 
 ALLOWED_EXTENSIONS = {".py", ".exe", ".zip", ".pdf", ".js", ".txt", ".json", ".html", ".css", ".md"}
