@@ -227,18 +227,29 @@ async def about_page(request: Request, db: Session = Depends(get_db)):
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request): return templates.TemplateResponse("register.html", {"request": request})
 
+# === ЗАМЕНИ ФУНКЦИЮ register_submit ПОЛНОСТЬЮ ===
 @app.post("/register")
 async def register_submit(request: Request, username: str = Form(...), email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     print(f"🔥 [REGISTER] STARTED for user: {username}")
     try:
+        # 1. Проверка занятости
         existing = db.query(Seller).filter((Seller.username == username) | (Seller.email == email)).first()
         if existing: 
             print("⚠️ [REGISTER] User exists")
-            return templates.TemplateResponse("register.html", {"request": request, "error": "Пользователь или Email уже заняты"})
-        if not is_password_strong(password, username): 
-            return templates.TemplateResponse("register.html", {"request": request, "error": "Слабый пароль"})
+            # ВАЖНО: Возвращаем шаблон с ошибкой, а не редирект!
+            return templates.TemplateResponse("register.html", {
+                "request": request, 
+                "error": "Пользователь или Email уже заняты"
+            })
         
-        print("📝 [REGISTER] Creating Seller object...")
+        # 2. Проверка пароля
+        if not is_password_strong(password, username): 
+            return templates.TemplateResponse("register.html", {
+                "request": request, 
+                "error": "Слабый пароль (минимум 8 символов, не используйте простые комбинации)"
+            })
+        
+        # 3. Создание юзера
         seller = Seller(
             username=username, 
             email=email, 
@@ -252,13 +263,10 @@ async def register_submit(request: Request, username: str = Form(...), email: st
             seller.is_founder = True
             seller.is_verified_buyer = True
             
-        print("💾 [REGISTER] Adding to DB...")
         db.add(seller)
-        print("💾 [REGISTER] Committing Seller...")
         db.commit()
-        print("✅ [REGISTER] Seller committed!")
         
-        print("🎫 [REGISTER] Creating Session...")
+        # 4. Создание сессии
         session_token = str(uuid.uuid4())
         expires = datetime.now() + timedelta(days=7)
         
@@ -270,33 +278,22 @@ async def register_submit(request: Request, username: str = Form(...), email: st
             user_agent=request.headers.get("user-agent")
         )
         db.add(new_session)
-        print("💾 [REGISTER] Committing Session...")
         db.commit()
-        print("✅ [REGISTER] Session committed!")
         
-        print("🚀 [REGISTER] Sending Redirect...")
+        # 5. УСПЕХ -> Только тут редирект!
         resp = RedirectResponse(url="/dashboard", status_code=303)
-        resp.set_cookie(
-            key="session_id",
-            value=session_token,
-            max_age=86400 * 7,
-            path="/",
-            httponly=True,
-            secure=False,
-            samesite="lax"
-        )
-        print("✅ [REGISTER] SUCCESS! Redirecting.")
-        gc.collect()
+        resp.set_cookie(key="session_id", value=session_token, max_age=86400 * 7, path="/", httponly=True, samesite="lax")
         return resp
 
     except Exception as e:
-        print("❌" * 20)
-        print(f"💀 [REGISTER] FATAL CRASH: {type(e).__name__}: {str(e)}")
+        print(f"💀 [REGISTER] CRASH: {e}")
         traceback.print_exc()
-        print("❌" * 20)
-        try: db.rollback()
-        except: pass
-        return templates.TemplateResponse("register.html", {"request": request, "error": f"CRASH: {str(e)}"})
+        db.rollback()
+        return templates.TemplateResponse("register.html", {
+            "request": request, 
+            "error": f"Ошибка сервера: {str(e)}"
+        })
+
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request): return templates.TemplateResponse("login.html", {"request": request})
@@ -307,16 +304,23 @@ async def login_submit(request: Request, username: str = Form(...), password: st
     try:
         seller = db.query(Seller).filter(Seller.username == username).first()
         
+        # Если юзер не найден ИЛИ пароль неверный
         if not seller or not verify_password(password, seller.password_hash):
-            return templates.TemplateResponse("login.html", {"request": request, "error": "Неверный логин или пароль"})
+            # ВАЖНО: Возвращаем шаблон с ошибкой!
+            return templates.TemplateResponse("login.html", {
+                "request": request, 
+                "error": "Неверный логин или пароль"
+            })
         
         if seller.is_banned: 
-            return templates.TemplateResponse("login.html", {"request": request, "error": "🚫 Ваш аккаунт заблокирован."})
+            return templates.TemplateResponse("login.html", {
+                "request": request, 
+                "error": "🚫 Ваш аккаунт заблокирован администрацией."
+            })
         
         seller.last_login = datetime.now(timezone.utc)
         db.commit()
         
-        print("🎫 [LOGIN] Creating Session...")
         session_token = str(uuid.uuid4())
         expires = datetime.now() + timedelta(days=7)
         
@@ -330,23 +334,20 @@ async def login_submit(request: Request, username: str = Form(...), password: st
         db.add(new_session)
         db.commit()
         
-        print("🚀 [LOGIN] Success. Redirecting...")
+        # УСПЕХ -> Редирект
         resp = RedirectResponse(url="/dashboard", status_code=303)
-        resp.set_cookie(
-            key="session_id",
-            value=session_token,
-            max_age=86400 * 7,
-            path="/",
-            httponly=True,
-            secure=False,
-            samesite="lax"
-        )
-        gc.collect()
+        resp.set_cookie(key="session_id", value=session_token, max_age=86400 * 7, path="/", httponly=True, samesite="lax")
         return resp
+
     except Exception as e:
         print(f"💀 [LOGIN] CRASH: {e}")
         traceback.print_exc()
-        return templates.TemplateResponse("login.html", {"request": request, "error": f"CRASH: {str(e)}"})
+        db.rollback()
+        return templates.TemplateResponse("login.html", {
+            "request": request, 
+            "error": f"Ошибка сервера: {str(e)}"
+        })
+
 
 @app.get("/logout")
 async def logout(request: Request, db: Session = Depends(get_db)):
@@ -417,37 +418,89 @@ async def upload_page(request: Request, db: Session = Depends(get_db)):
 @app.post("/upload")
 async def upload_product(request: Request, title: str = Form(...), description: str = Form(...), price: float = Form(...), file: UploadFile = File(...), screenshots: List[UploadFile] = File(...), video: Optional[UploadFile] = File(None), db: Session = Depends(get_db)):
     user = get_current_user(request, db)
-    if not user: return RedirectResponse(url="/login")
+    if not user: 
+        return RedirectResponse(url="/login", status_code=303)
+    
+    # 1. Проверка расширения файла
     file_ext = os.path.splitext(file.filename)[1].lower()
-    if file_ext not in ALLOWED_EXTENSIONS: return templates.TemplateResponse("upload.html", {"request": request, "current_user": user, "error": f"Неверный формат ({file_ext})", "founder_name": FOUNDER_USERNAME})
+    if file_ext not in ALLOWED_EXTENSIONS: 
+        return templates.TemplateResponse("upload.html", {
+            "request": request, 
+            "current_user": user, 
+            "error": f"Неверный формат файла '{file_ext}'. Разрешены: {', '.join(ALLOWED_EXTENSIONS)}", 
+            "founder_name": FOUNDER_USERNAME
+        })
+    
+    # 2. Проверка ИИ
     ai_result = ai_classify_product(title, description, file.filename)
-    if ai_result['status'] == 'failed': return templates.TemplateResponse("upload.html", {"request": request, "current_user": user, "error": f"❌ ИИ: {ai_result['reason']}", "founder_name": FOUNDER_USERNAME})
+    if ai_result['status'] == 'failed': 
+        return templates.TemplateResponse("upload.html", {
+            "request": request, 
+            "current_user": user, 
+            "error": f"❌ ИИ отклонил товар: {ai_result['reason']}", 
+            "founder_name": FOUNDER_USERNAME
+        })
+    
     try:
         ts = datetime.now(timezone.utc).timestamp()
         file_path = f"_protected_uploads/{ts}_{file.filename}"
-        with open(file_path, "wb") as f: f.write(await file.read())
         
+        # Сохраняем основной файл
+        with open(file_path, "wb") as f: 
+            f.write(await file.read())
+        
+        # Сохраняем скриншоты
         saved_screenshots = []
         for img in screenshots:
             if img.filename and os.path.splitext(img.filename)[1].lower() in ALLOWED_IMAGES:
                 path = f"uploads/screenshots/{ts}_{img.filename}"
-                with open(path, "wb") as f: f.write(await img.read())
+                with open(path, "wb") as f: 
+                    f.write(await img.read())
                 saved_screenshots.append(path)
+        
+        # Сохраняем видео
         video_path = None
         if video and video.filename and os.path.splitext(video.filename)[1].lower() in ALLOWED_VIDEOS:
             path = f"uploads/videos/{ts}_{video.filename}"
-            with open(path, "wb") as f: f.write(await video.read())
+            with open(path, "wb") as f: 
+                f.write(await video.read())
             video_path = path
             
-        prod = Product(seller_id=user.id, title=title, description=description, main_category=ai_result['main'], sub_category=ai_result['sub'], price=price, file_path=file_path, screenshots=saved_screenshots, demo_video_path=video_path, is_verified=not ai_result['review'], requires_manual_review=ai_result['review'], ai_check_status='passed')
+        # Создаем запись в БД
+        prod = Product(
+            seller_id=user.id, 
+            title=title, 
+            description=description, 
+            main_category=ai_result['main'], 
+            sub_category=ai_result['sub'], 
+            price=price, 
+            file_path=file_path, 
+            screenshots=saved_screenshots, 
+            demo_video_path=video_path, 
+            is_verified=not ai_result['review'], 
+            requires_manual_review=ai_result['review'], 
+            ai_check_status='passed'
+        )
         db.add(prod)
-        if user.points == 0: user.points += Config.POINTS_FOR_UPLOAD
+        
+        if user.points == 0: 
+            user.points += Config.POINTS_FOR_UPLOAD
+            
         db.commit()
+        
+        # УСПЕХ
         return RedirectResponse(url="/dashboard?success=1", status_code=303)
+        
     except Exception as e: 
         print(f"❌ Upload Error: {e}")
-        traceback.print_exc()
-        return templates.TemplateResponse("upload.html", {"request": request, "current_user": user, "error": str(e), "founder_name": FOUNDER_USERNAME})
+        traceback.print_exc() # Убедись, что import traceback есть в начале файла!
+        db.rollback()
+        return templates.TemplateResponse("upload.html", {
+            "request": request, 
+            "current_user": user, 
+            "error": f"Произошла ошибка при загрузке: {str(e)}", 
+            "founder_name": FOUNDER_USERNAME
+        })
 
 @app.get("/product/{pid}/edit", response_class=HTMLResponse)
 async def edit_product_page(pid: int, request: Request, db: Session = Depends(get_db)):
