@@ -121,7 +121,12 @@
     ❌ {{ request.query_params.get("error") }}
 </div>
 {% endif %}
-
+<!-- БЛОК ВЫВОДА ОШИБОК -->
+{% if error %}
+<div style="background-color: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ef9a9a; text-align: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    ⚠️ {{ error }}
+</div>
+{% endif %}
             <form method="post" action="/register">
                 <div class="form-group">
                     <label for="username">Имя пользователя</label>
